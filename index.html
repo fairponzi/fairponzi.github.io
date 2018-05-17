@@ -1,1 +1,468 @@
-en test
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="x-ua-compatible" content="ie=edge">
+<title>FairPonzi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link rel="shortcut icon" href="icon.ico" />
+<link rel="stylesheet" type="text/css" href="mystyle.css">
+<link rel="stylesheet" type="text/css" href="style.css">
+<link href="https://fonts.googleapis.com/css?family=Space+Mono:700|Work+Sans:400,600" rel="stylesheet">
+<script src="web3.min.js"></script>
+<script src="jquery-3.2.1.slim.min.js"></script>
+<script type="text/javascript">
+var refaccount = '';
+var useraccount = '';
+var contractadd = '0x398bf07971475a020831d9c5e2ac24ff393b9862';
+var contractabi = [{"constant": false,"inputs": [{"name": "refaddr","type": "address"}],"name": "buyin","outputs": [],"payable": true,"stateMutability": "payable","type": "function"},{"constant": false,"inputs": [],"name": "redeemPayout","outputs": [],"payable": false,"stateMutability": "nonpayable","type": "function"},{"inputs": [],"payable": false,"stateMutability": "nonpayable","type": "constructor"},{"payable": true,"stateMutability": "payable","type": "fallback"},{"constant": true,"inputs": [{"name": "addr","type": "address"}],"name": "getAccountBalance","outputs": [{"name": "amount","type": "uint256"}],"payable": false,"stateMutability": "view","type": "function"},{"constant": true,"inputs": [],"name": "getAccountInfo","outputs": [{"name": "retaddr","type": "address"},{"name": "initamount","type": "uint256"},{"name": "investmenttime","type": "uint256"},{"name": "currentbalance","type": "uint256"},{"name": "_timeuntilnextreward","type": "uint256"},{"name": "_refbonus","type": "uint256"},{"name": "_refaddress","type": "address"},{"name": "_refcount","type": "uint256"}],"payable": false,"stateMutability": "view","type": "function"},{"constant": true,"inputs": [{"name": "addr","type": "address"}],"name": "getAccountInfo","outputs": [{"name": "retaddr","type": "address"},{"name": "initamount","type": "uint256"},{"name": "investmenttime","type": "uint256"},{"name": "currentbalance","type": "uint256"},{"name": "_timeuntilnextreward","type": "uint256"},{"name": "_refbonus","type": "uint256"},{"name": "_refaddress","type": "address"},{"name": "_refcount","type": "uint256"}],"payable": false,"stateMutability": "view","type": "function"},{"constant": true,"inputs": [],"name": "getBlocksUntilStart","outputs": [{"name": "count","type": "uint256"}],"payable": false,"stateMutability": "view","type": "function"},{"constant": true,"inputs": [{"name": "idrel","type": "uint256"}],"name": "getPayout","outputs": [{"name": "bidder","type": "address"},{"name": "inamount","type": "uint256"},{"name": "outamount","type": "uint256"}],"payable": false,"stateMutability": "view","type": "function"},{"constant": true,"inputs": [],"name": "getStatus","outputs": [{"name": "_payoutcount","type": "uint256"},{"name": "_blocksUntilStart","type": "uint256"},{"name": "_payincount","type": "uint256"}],"payable": false,"stateMutability": "view","type": "function"},{"constant": true,"inputs": [{"name": "","type": "uint256"},{"name": "","type": "address"}],"name": "investmentTable","outputs": [{"name": "initamount","type": "uint256"},{"name": "inittime","type": "uint256"},{"name": "refbonus","type": "uint256"},{"name": "refaddress","type": "address"},{"name": "refcount","type": "uint256"}],"payable": false,"stateMutability": "view","type": "function"},{"constant": true,"inputs": [],"name": "minbid","outputs": [{"name": "","type": "uint256"}],"payable": false,"stateMutability": "view","type": "function"},{"constant": true,"inputs": [],"name": "payincount","outputs": [{"name": "","type": "uint256"}],"payable": false,"stateMutability": "view","type": "function"},{"constant": true,"inputs": [],"name": "payoutcount","outputs": [{"name": "","type": "uint256"}],"payable": false,"stateMutability": "view","type": "function"},{"constant": true,"inputs": [{"name": "","type": "uint256"}],"name": "payoutList","outputs": [{"name": "receiver","type": "address"},{"name": "inamount","type": "uint256"},{"name": "outamount","type": "uint256"}],"payable": false,"stateMutability": "view","type": "function"},{"constant": true,"inputs": [],"name": "rewardinterval","outputs": [{"name": "","type": "uint256"}],"payable": false,"stateMutability": "view","type": "function"},{"constant": true,"inputs": [],"name": "startblock","outputs": [{"name": "","type": "uint256"}],"payable": false,"stateMutability": "view","type": "function"}];
+var apicount = 0;
+var blocksuntilstart = 1;
+var lasttotalpayouts = -1;
+var accountlink = "https://etherscan.io/address/";
+var laststatus = '';
+var contractbalance = 0.0;
+var blocksuntilreset = -1;
+var fairponzi = null;
+var autouseraccount = false;
+function init() {
+    console.log('starting...');
+    if (typeof web3 !== 'undefined') {
+        web3 = new Web3(web3.currentProvider);
+    } else {
+        //Mainnet	production network	https://mainnet.infura.io/6Ifier0myJ2C4Nq5KQTK
+        //Ropsten	test network	https://ropsten.infura.io/6Ifier0myJ2C4Nq5KQTK
+        //INFURAnet	test network	https://infuranet.infura.io/6Ifier0myJ2C4Nq5KQTK
+        //Kovan	test network	https://kovan.infura.io/6Ifier0myJ2C4Nq5KQTK
+        //Rinkeby	test network	https://rinkeby.infura.io/6Ifier0myJ2C4Nq5KQTK
+        web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/6Ifier0myJ2C4Nq5KQTK"));
+    }
+    console.log(web3.version);
+    fairponzi = new web3.eth.Contract(contractabi, contractadd);
+    $("#account").text(contractadd);
+    $("#account").attr("href", accountlink + contractadd);
+    $("#useraccountin").show();
+    $("#copyrefsel").show();
+    var url = 'https://api.qrserver.com/v1/create-qr-code/?data=' + contractadd + '&size=500x500';
+    $('#barcode').attr('src', url);
+
+    $("#send").click(function() {
+        fairponzi.methods.buyin(refaccount).send({
+            from: useraccount,
+            value: parseInt($("#sendvalue").val() * 1000000000000000000)
+        }, function(error, result) {});
+    });
+    $("#copyref").click(function() {
+        var $temp = $("<input>");
+        $("body").append($temp);
+        $temp.val(document.location.protocol + "//" + document.location.hostname + document.location.pathname + "?ref=" + useraccount).select();
+        document.execCommand("copy");
+        $temp.remove();
+        $("#copyref").text("Copied..");
+
+    });
+    $("#copyref").mouseout(function() {
+        $("#copyref").text("Copy link");
+    });
+    $("#payoutb").click(function() {
+        web3.eth.sendTransaction({
+            value: 0,
+            to: contractadd
+        });
+    });
+    refaccount = findGetParameter("ref");
+    console.log(refaccount);
+    useraccount = getCookie("user");
+    $("#useraccountinput").val(useraccount);
+    $("#useraccountinput").keyup(function() {
+        useraccount = $("#useraccountinput").val();
+    });
+    $('#useraccountinput').on('input', function() {
+        useraccount = $("#useraccountinput").val();
+        setCookie("user", useraccount);
+    });
+
+    function payoutclick() {
+        web3.eth.sendTransaction({
+            value: 0,
+            to: contractadd
+        });
+    }
+    refreshSite();
+
+    var tid = setInterval(refreshSite, 2000);
+}
+
+function refreshSite() {
+    try {
+        web3.eth.getAccounts(function(error, result) {
+            if (error) {
+                $("#sending").hide();
+                $("#payout").hide();
+                return;
+            }
+            if (result[0] != null) {
+                useraccount = result[0];
+                $("#useraccountinput").val(useraccount);
+            }
+            if (blocksuntilstart == 0 && useraccount && useraccount != '' && result[0] != null) {
+                web3.eth.defaultAccount = useraccount;
+                fairponzi.options.from = useraccount;
+                $("#useraccount").text(useraccount);
+                $("#useraccount").attr("href", accountlink + useraccount + "");
+                $("#sending").show();
+                $("#payout").show();
+            } else {
+                $("#sending").hide();
+                $("#payout").hide();
+            }
+        });
+
+        web3.eth.getBlockNumber(
+            function(error, result) {
+                if (!error) {
+                    var currentdate = new Date();
+                    var datetime = "Last refresh: " + currentdate.getDate() + "/" +
+                        (currentdate.getMonth() + 1) + "/" +
+                        currentdate.getFullYear() + " @ " +
+                        currentdate.getHours() + ":" +
+                        currentdate.getMinutes() + ":" +
+                        currentdate.getSeconds();
+                    $("#lastrefresh").text(datetime + " Block: " + result);
+                } else
+                    console.error(error);
+            }
+        );
+        fairponzi.methods.getAccountInfo(useraccount).call(
+            function(error, result) {
+                if (!error) {
+                    if (useraccount.length <= 0) {
+                        $("#userinfo").html("Login into <a href='https://metamask.io/' target='_blank'>Metamask<a>");
+                        $("#userbalance").html("");
+                        $("#userreturn").html("");
+                        $("#usernextreward").html("");
+
+                    } else {
+                        $("#userbalance").html(formatWei(result["currentbalance"]));
+                        $("#userreturn").html(parseInt((result["currentbalance"] / result["initamount"]) * 100, 10) + "%");
+                        if (result["_refbonus"] > 0) {
+                            $("#refbonus").html("+" + formatWei(result["_refbonus"]));
+                            $("#refbonus").show();
+                        } else {
+                            $("#refbonus").hide();
+                        }
+                        $("#refcount").html(result["_refcount"]);
+                        var nextReward = parseInt(result["_timeuntilnextreward"], 10);
+                        var rwhours = parseInt(nextReward / 3600, 10);
+                        var rwminutes = parseInt((nextReward - rwhours * 3600) / 60, 10);
+                        var rwseconds = parseInt((nextReward - rwhours * 3600 - rwminutes * 60), 10);
+                        if (rwhours > 0) {
+                            $("#usernextreward").html(rwhours + (rwhours == 1 ? " Hour, " : " Hours, ") + rwminutes + (rwminutes == 1 ? " Minute" : " Minutes"));
+                        } else if (rwminutes > 0) {
+                            $("#usernextreward").html(rwminutes + (rwminutes == 1 ? " Minute, " : " Minutes, ") + rwseconds + (rwseconds == 1 ? " Second" : " Seconds"));
+                        } else {
+                            $("#usernextreward").html(rwseconds + (rwseconds == 1 ? " Second" : " Seconds"));
+                        }
+                        $("#userinfo").html("");
+                    }
+                } else
+                    console.error(error);
+            }
+        );
+
+        fairponzi.methods.getBlocksUntilStart().call(
+            function(error, result) {
+                if (!error) {
+                    blocksuntilstart = parseInt(result);
+                    if (blocksuntilstart > 0) {
+
+                        fairponzi.methods.startblock().call(
+                            function(error, resultstart) {
+                                if (!error) {
+                                    $("#info").html(".. starts in " + blocksuntilstart + " blocks (" + resultstart + ")");
+                                    $("#info").show();
+
+                                } else
+                                    console.error(error);
+                            }
+                        );
+                    } else {
+                        $("#info").html("Summary");
+                    }
+                } else
+                    console.error(error);
+            }
+        );
+        fairponzi.methods.getStatus().call(
+            function(error, result) {
+                if (!error) {
+                    var thisstatus = result["_payoutcount"];
+                    $("#investcount").html(result["_payincount"]);
+                    if (thisstatus != laststatus) {
+                        laststatus = thisstatus;
+                        refreshData(result);
+                    }
+                } else
+                    console.error(error);
+            }
+        );
+        web3.eth.getBalance(contractadd, function(error, result) {
+            if (!error) {
+                contractbalance = result;
+                $("#balance").html(formatWei(result));
+            } else
+                console.error(error);
+        });
+    } catch (err) {}
+}
+
+function refreshData(result) {
+    console.log("something changed, refresh tables");
+
+    var text = "";
+    var listcount = parseInt(result["_payoutcount"], 10);
+    if (listcount - 1 == lasttotalpayouts) {
+        return;
+    }
+    var lastpayout = listcount - 1;
+    if (listcount > 5) listcount = 5;
+    console.log(listcount);
+    while ($('#payoutlist tr').length < (listcount + 1)) {
+        $('#payoutlist').append('<tr id="tdid' + ($('#payoutlist tr').length - 1) + '"><td>my data</td><td>more data</td></tr>');
+    }
+    while ($('#payoutlist tr').length > listcount + 1) {
+        $('#payoutlist tr:last').remove();
+    }
+
+    for (i = 0; i < listcount; i++) {
+
+        sendPayoutRequest(i, lastpayout - i);
+    }
+    lasttotalpayouts = lastpayout;
+}
+
+function sendPayoutRequest(listid, payoutid) {
+    fairponzi.methods.getPayout(payoutid).call(
+        function(error, item) {
+            if (!error) {
+                var earn = (parseFloat(item["outamount"]) / parseFloat(item["inamount"])) * 100;
+
+                var id = "";
+                id += "<td class='vright'>" + (payoutid + 1) + "</td>";
+                id += "<td class='monospace'>" + "<a href='" + accountlink + item["bidder"] + "#internaltx' target='_blank'>" + item["bidder"] + (item["bidder"] == useraccount ? " <-- you" : "") + "</a>" + "</td>";
+                id += "<td class='vright monospace'>" + formatWei(item["inamount"]) + "</td>";
+                id += "<td class='vright monospace'>" + formatWei(item["outamount"]) + "</td>";
+                id += "<td class='vright monospace'>" + (earn > 0 ? "" + earn.toFixed(0) + "%" : "") + "</td>";;
+                var item = $("#payoutlist").find("tr:eq(" + (listid + 1) + ")");
+                if (item.html().indexOf(htmlEncode(id)) < 0) {
+                    item.html(id);
+                }
+            } else
+                console.error(error);
+        }
+    );
+}
+
+function formatWei(wei) {
+    var amount = parseFloat(web3.utils.fromWei(wei, 'ether'));
+    var amountstr = amount.toFixed(9);
+    var ret = "";
+    var setgray = true;
+    for (var i = 0; i < amountstr.length; i++) {
+        var char = amountstr.charAt(amountstr.length - i - 1);
+        if (char == '0' && setgray) {
+            ret = "<te class='trans monospace'>0</te>" + ret;
+        } else if (char == '.' && setgray) {
+            ret = "<te class='trans monospace'>.</te>" + ret;
+            setgray = false;
+        } else {
+            ret = char + ret;
+            setgray = false;
+        }
+    }
+    return ret;
+}
+
+function payoutclick() {
+    web3.eth.sendTransaction({
+        value: 0,
+        to: contractadd
+    });
+}
+
+function htmlEncode(value) {
+    return $('<div/>').html(value).html();
+}
+
+function setCookie(cname, cvalue) {
+    var d = new Date();
+    d.setTime(d.getTime() + (365 * 24 * 60 * 60 * 1000));
+    var expires = "expires=" + d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function getCookie(cname) {
+    var name = cname + "=";
+    var ca = document.cookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+
+function findGetParameter(parameterName) {
+    var result = null,
+        tmp = [];
+    location.search
+        .substr(1)
+        .split("&")
+        .forEach(function(item) {
+            tmp = item.split("=");
+            if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+        });
+    return result;
+}
+</script>
+</head>
+<body onload="init()">
+<div class="navbar">
+<p id="lastrefresh">123</p>
+</div>
+
+<header class="spot">
+	<div class="spot-inner">
+		<h1>FairPonzi</h1>
+		<p>0.5% daily reward!</p>
+		<a href="#userstats">Try it now</a>
+	</div>
+</header>
+
+<section id="summary" class="fair">
+	<h2 class="h2" id="info">Summary</h2>
+
+	<div class="fair-code">
+		<table>
+                        <tr><td>Address:</td><td><a id="account" href="" target="_blank"></a><br>It's likely that somebody else will win your coins</td></tr>
+			<tr><td>Balance:</td><td><div id="balance"></div></td></tr>
+			<tr><td>Investments:</td><td><div id="investcount"></div></td></tr>
+		</table>
+
+		<img id='barcode' src="" alt=""  width="200" height="200" style="opacity:0.7" /></td></tr>
+	</div>
+</section>
+
+<section id="userstats" class="fair">
+        <h2 class="h2" id="info">Your stats</h2>
+
+        <div class="fair-code">
+                <table>
+                        <tr><td>Address:</td><td colspan="2">
+
+<div id="userinfo">
+Login into <a href='https://metamask.io/' target='_blank'>Metamask<a></div>
+<section id="useraccountin" class="fair--metamask">
+
+<input id="useraccountinput" size="45" style="font-size:15px" placeholder=".. or input your address manual" spellcheck="false" onclick="this.select();">
+</section>
+
+
+</td></tr>
+                        <tr><td>Balance:</td><td><cust id="userbalance"></cust></td><td>
+
+<section id="payout" class="fair--metamask">
+<cust id="userbalance"></cust>
+        <button id="payoutb">Payout</button><cust id="refbonus"></cust>
+</section>
+
+
+			</td></tr>
+
+                        <tr><td>Total return:</td><td colspan="2"><div id="userreturn"></div></td></tr>
+			<tr><td>Next reward:</td><td colspan="2"><div id="usernextreward"></div></td></tr>
+			<tr><td>Referral count:</td><td><div id="refcount"></div></td>
+
+
+<td>
+<section id="copyrefsel" class="fair--metamask">
+        <button id="copyref">Copy link</button>
+</selection>
+</td>
+</tr>
+                </table>
+</div>
+</section>
+
+<section id="sending" class="fair fair--metamask">
+        <h2 class="h2">Send ETH now</h2>
+        <input id="sendvalue" type="number" name="quantity" min="0" value="0.000">
+        <button id="send">Send</button>
+</section>
+
+<section class="fair fair--default">
+        <h2 class="h2">Latest payouts</h2>
+
+        <table id="payoutlist">
+                <thead>
+                <tr>
+                        <td>#</td>
+                        <td>Account</td>
+                        <td>Buyin</td>
+                        <td>Payout</td>
+                        <td>Return</td>
+                </tr>
+                </thead>
+        </table>
+
+</section>
+</section>
+
+
+<section class="fair">
+	<h2 class="h2">How it works</h2>
+
+	<ul>
+		<li>
+			<span>Like every pyramide system</span>
+			<ul>
+				<li>First come, First served</li>
+				<li>Find the best all-out point</li>
+			</ul>
+		</li>
+		<li>
+			<span>Rules:</span>
+			<ul>
+				<li>Get every day 0.5% reward of your balance</li>
+				<li>With a 0 Eth transaction you redeem a payout<ul>
+	<li>You can payout anytime you want!</li>
+</ul></li>
+				<li>If ponzi cannot pay a payout request, it goes bankrupt, reset and and starts from beginning
+				</li>
+			</ul>
+		</li>
+	</ul>
+</section>
+
+
+<section class="fair">
+        <h2 class="h2">How referral works?</h2>
+
+        <ul>
+                <li>
+                        <span>You can easy generate referral link with "Copy link" button</span>
+                        <ul>
+                                <li>If somebody buyin over your link, you get 10% of his winning reward</li>
+                        </ul>
+                </li>
+                <li>
+                        <span>Advanced promotors can host their own website (with automatic included referral data)</span>
+                </li>
+        </ul>
+</section>
+
+</body>
+</html>
