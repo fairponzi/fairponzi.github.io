@@ -5,7 +5,7 @@ FairPonzi - transparent, nonfee and opensource pyramide gambling SmartContract -
 * 100% open source 
   * Website(html/javascript) + SmartContract(solidity)
 * 100% fair and easy gambling 
-  * EVERY people has EXCAT the same information!
+  * EVERY people has EXACT the same information!
 
 ## What we don't have:
 * No control of your funds
