@@ -1,4 +1,5 @@
-pragma solidity ^0.4.0; contract FairPonzi {
+pragma solidity ^0.4.0;
+contract FairPonzi {
     struct Investment {
         uint initamount;
         uint inittime;
