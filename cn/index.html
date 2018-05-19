@@ -1,4 +1,4 @@
-<html lang="en">
+<html lang="cn">
 <head>
 <meta charset="utf-8">
 <meta http-equiv="x-ua-compatible" content="ie=edge">
@@ -178,7 +178,7 @@ function refreshSite() {
                         fairponzi.methods.startblock().call(
                             function(error, resultstart) {
                                 if (!error) {
-                                    $("#info").html(".. 将会开始于 " + blocksuntilstart + " 区块 (" + resultstart + ")");
+                                    $("#info").html(".. 游戏将会开始于 " + blocksuntilstart + " 个区块之后 (" + resultstart + ")");
                                     $("#info").show();
 
                                 } else
@@ -347,7 +347,7 @@ function findGetParameter(parameterName) {
 
 	<div class="fair-code">
 		<table>
-                        <tr><td>钱包地址：</td><td><a id="account" href="" target="_blank"></a><br>看起来别人会赢走你的币</td></tr>
+                        <tr><td>游戏合约地址：</td><td><a id="account" href="" target="_blank"></a><br>看起来别人会赢走你的币</td></tr>
 			<tr><td>余额：</td><td><div id="balance"></div></td></tr>
 			<tr><td>投资：</td><td><div id="investcount"></div></td></tr>
 		</table>
@@ -459,7 +459,7 @@ function findGetParameter(parameterName) {
                         </ul>
                 </li>
                 <li>
-                        <span>高级推广者可以自己假设本游戏网站 (所以的玩家充值将会自动通过你的推广链接)</span>
+                        <span>高级推广者可以自己架设本游戏网站 (所以的玩家充值将会自动通过你的推广链接)</span>
                 </li>
         </ul>
 </section>
