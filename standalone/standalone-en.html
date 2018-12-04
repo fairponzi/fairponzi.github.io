@@ -38,7 +38,7 @@ function init() {
         //INFURAnet	test network	https://infuranet.infura.io/6Ifier0myJ2C4Nq5KQTK
         //Kovan	test network	https://kovan.infura.io/6Ifier0myJ2C4Nq5KQTK
         //Rinkeby	test network	https://rinkeby.infura.io/6Ifier0myJ2C4Nq5KQTK
-        web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/6Ifier0myJ2C4Nq5KQTK"));
+        web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/v3/01e3a981e52141ca9f8847eba93f60a2"));
     }
     console.log(web3.version);
     fairponzi = new web3.eth.Contract(contractabi, contractadd);
